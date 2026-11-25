@@ -1,0 +1,1 @@
+Implement the connection wire protocol and consumer core actions. Tests must prove the consumer opens the owning manager through startInterface, validates response, and refreshes. Never use getMyResource or createConnection on the consumer wire. Paginate and reject malformed pages.

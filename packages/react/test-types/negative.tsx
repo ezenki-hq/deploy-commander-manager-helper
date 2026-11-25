@@ -1,4 +1,4 @@
-import { ConfigurationSection, type SectionActionMap } from "@ezenki/deploy-commander-manager-sdk-react";
+import { ConfigurationSection, ManagerInvocationSection, type ResourceProviderInterfaces, type SectionActionMap } from "@ezenki/deploy-commander-manager-sdk-react";
 
 interface Profile {
   name: string;
@@ -30,3 +30,10 @@ export const conflictingModes = (
     children={({ data }) => <output>{data.name}</output>}
   />
 );
+
+export const invalidRegistration = { } satisfies ResourceProviderInterfaces<{ database: string }>;
+export const mismatchedInvocationResult = <ManagerInvocationSection
+  wire={{} as import("@ezenki/deploy-commander-installer-interface").Wire}
+  definition={{ parseMetadata: (value) => value as { id: string }, validateResult: (result: { accepted: boolean }) => { void result.accepted; } }}
+  called={({ complete }) => <button onClick={() => complete({ wrong: true })}>Bad result</button>}
+/>;

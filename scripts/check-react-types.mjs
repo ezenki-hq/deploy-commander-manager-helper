@@ -33,7 +33,7 @@ if (negative.status === 0) {
   throw new Error("React negative type fixture unexpectedly compiled successfully.");
 }
 const diagnostics = `${negative.stdout ?? ""}${negative.stderr ?? ""}`;
-if (!diagnostics.includes("not assignable") || !diagnostics.includes("initialData")) {
+if (!diagnostics.includes("not assignable") || !diagnostics.includes("initialData") || !diagnostics.includes("createConnection")) {
   process.stderr.write(diagnostics);
-  throw new Error("React negative type fixture did not reject both incompatible actions and conflicting data modes.");
+  throw new Error("React negative type fixture did not reject incompatible actions, conflicting data modes, and a missing required connection registration.");
 }

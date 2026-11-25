@@ -24,7 +24,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@ezenki/deploy-commander-manager-sdk-core": "*"
+    "@ezenki/deploy-commander-manager-sdk-core": "*",
+    "@ezenki/deploy-commander-installer-interface": "^0.8.1"
   },
   "peerDependencies": {
     "react": "^19.0.0"

@@ -28,6 +28,7 @@ let nextSectionId = 0;
 
 @Component({
   selector: "dcmsdk-configuration-section",
+  exportAs: "dcmsdkConfigurationSection",
   standalone: true,
   imports: [CommonModule, SectionActions, SectionStatus],
   changeDetection: ChangeDetectionStrategy.OnPush,

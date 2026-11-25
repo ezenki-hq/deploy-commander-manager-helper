@@ -22,10 +22,11 @@
   "scripts": {
     "compile": "ng-packagr -p ng-package.json -c tsconfig.lib.json && node ../../scripts/finalize-angular-package.mjs",
     "typecheck": "ngc -p tsconfig.lib.json --noEmit && node ../../scripts/check-angular-types.mjs",
-    "test:runtime": "ngc -p tsconfig.test.json && node --test tests/configuration.test.mjs"
+    "test:runtime": "ngc -p tsconfig.test.json && node --test tests/*.test.mjs"
   },
   "peerDependencies": {
     "@ezenki/deploy-commander-manager-sdk-core": "*",
+    "@ezenki/deploy-commander-installer-interface": "^0.8.1",
     "@angular/common": "^21.0.0",
     "@angular/core": "^21.0.0"
   },

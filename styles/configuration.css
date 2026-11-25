@@ -1,6 +1,11 @@
 @import "tailwindcss/theme";
 @import "tailwindcss/utilities";
 
+@source "../packages/react/src";
+@source "../packages/vue/src";
+@source "../packages/svelte/src";
+@source "../packages/angular/src";
+
 @theme inline {
   --color-dcmsdk-surface: var(--dcmsdk-surface);
   --color-dcmsdk-raised: var(--dcmsdk-raised);

@@ -1,5 +1,7 @@
 export { createCoreActions } from "./actions.js";
 export * from "./configuration/index.js";
+export * from "./connections/index.js";
+export * from "./invocation/index.js";
 export type {
   ConnectionDetail,
   ConnectionFilters,

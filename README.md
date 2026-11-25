@@ -7,10 +7,10 @@ A TypeScript monorepo of reusable libraries for managers that integrate with Dep
 | Package | Purpose | Stylesheet |
 | --- | --- | --- |
 | [`@ezenki/deploy-commander-manager-sdk-core`](packages/core) | Framework-independent Deploy Commander actions and shared configuration contracts/lifecycle | — |
-| [`@ezenki/deploy-commander-manager-sdk-react`](packages/react) | React configuration sections, action/status components, and grouping | `@ezenki/deploy-commander-manager-sdk-react/styles.css` |
-| [`@ezenki/deploy-commander-manager-sdk-vue`](packages/vue) | Vue 3 configuration sections, action/status components, and grouping | `@ezenki/deploy-commander-manager-sdk-vue/styles.css` |
-| [`@ezenki/deploy-commander-manager-sdk-svelte`](packages/svelte) | Svelte 5 configuration sections, action/status components, and grouping | `@ezenki/deploy-commander-manager-sdk-svelte/styles.css` |
-| [`@ezenki/deploy-commander-manager-sdk-angular`](packages/angular) | Standalone Angular configuration sections, action/status components, body directive, and grouping | `@ezenki/deploy-commander-manager-sdk-angular/styles.css` |
+| [`@ezenki/deploy-commander-manager-sdk-react`](packages/react) | React configuration, connection, and manager-invocation sections | `@ezenki/deploy-commander-manager-sdk-react/styles.css` |
+| [`@ezenki/deploy-commander-manager-sdk-vue`](packages/vue) | Vue 3 configuration, connection, and manager-invocation sections | `@ezenki/deploy-commander-manager-sdk-vue/styles.css` |
+| [`@ezenki/deploy-commander-manager-sdk-svelte`](packages/svelte) | Svelte 5 configuration, connection, and manager-invocation sections | `@ezenki/deploy-commander-manager-sdk-svelte/styles.css` |
+| [`@ezenki/deploy-commander-manager-sdk-angular`](packages/angular) | Standalone Angular configuration, connection, and manager-invocation sections | `@ezenki/deploy-commander-manager-sdk-angular/styles.css` |
 
 Each package is independently consumable. Install the core package when using its actions or types; each UI package declares core as a dependency. UI framework runtimes are peers: React 19, Vue 3.5+, Svelte 5.20+, and Angular 21+. UI packages are ESM. Svelte exports compiler-ready components under the `svelte` export condition; use a Svelte-aware consumer build.
 
@@ -180,6 +180,132 @@ Colors inherit from SDK CSS variables and honor the user's system color preferen
 ## Deploy Commander integration
 
 Core integrations use documented operations from `@ezenki/deploy-commander-installer-interface`. Deploy Commander supplies trusted manager context and enforces ownership/access. Managers prepare deployment metadata for state-changing operations; `ezenki/deploy-commander-runner` applies it. See the [manager interface guide](docs/integrations/MANAGER_INTERFACE_GUIDE.md) and [runner implementation guide](docs/integrations/DEPLOYMENT_RUNNER_IMPLEMENTATION_GUIDE.md) before changing core integration behavior.
+
+## Connection sections and manager invocation
+
+`ConnectionSection` is used by a consuming manager. It searches public resource summaries by name or ID, shows authorized connections, and supports controlled `data`/`onDataChange` or local `initialData`. `maxConnections` defaults to one; set it to a positive integer to allow more selections, including multiple connections to the same resource. Deletion is offered only when an `onDeleteConnection` handler is supplied. Creating a connection opens the selected resource owner with `wire.startInterface()` and waits for that interface to finish. The consumer never reads another manager's private resource configuration and never calls `createConnection` for another manager.
+
+`CreateConnectionSection` belongs to the resource-owning manager. Its definition supplies typed initial settings and an `onCreateConnection` handler. The body can inspect the owned resource, trusted calling manager ID, and existing connections scoped to that exact resource/caller pair. The SDK calls the existing `caller.createConnection()` RPC from the owner context and returns only the new connection ID and resource ID. Managers may supply `onDeleteConnection` to offer authorized deletion. Neither component persists form edits or starts runs on field changes.
+
+Register a provider before dispatching invocation metadata. This makes the create-connection interface a required property of the provider registry:
+
+```ts
+import type { ResourceProviderInterfaces } from "@ezenki/deploy-commander-manager-sdk-core";
+
+type ConnectionSettings = { database: string };
+const providerInterfaces = {
+  createConnection: {
+    initialSettings: () => ({ database: "" }),
+    onCreateConnection: (settings: ConnectionSettings) => ({ metadata: { database: settings.database } }),
+  },
+} satisfies ResourceProviderInterfaces<ConnectionSettings>;
+```
+
+The host can dispatch on the validated purpose `createConnection`. The provider section independently validates its incoming metadata and ownership context. `getMyResource()` is used only inside that provider section, where the current manager owns the resource.
+
+### React provider and consumer
+
+```tsx
+import {
+  ConnectionSection,
+  CreateConnectionSection,
+  ManagerInvocationSection,
+} from "@ezenki/deploy-commander-manager-sdk-react";
+import "@ezenki/deploy-commander-manager-sdk-react/styles.css";
+
+<ConnectionSection
+  wire={wire}
+  resource={{ filters: { type: "database" } }}
+  initialData={{ connectionIds: [] }}
+  maxConnections={2}
+  onSelectionChange={(ids) => setConnectionIds(ids)}
+/>;
+
+<ManagerInvocationSection
+  wire={wire}
+  definition={{ parseMetadata: parseManagerMetadata }}
+  standalone={() => <ManagerHome />}
+  called={() => <CreateConnectionSection
+    wire={wire}
+    {...providerInterfaces.createConnection}
+    children={({ data, setData }) => <input
+      aria-label="Database"
+      className="dcmsdk-input"
+      value={data.database}
+      onChange={(event) => setData({ ...data, database: event.target.value })}
+    />}
+  />}
+/>
+```
+
+### Vue provider and consumer
+
+```vue
+<ConnectionSection :wire="wire" :resource="{ filters: { type: 'database' } }"
+  :selection="{ initialData: { connectionIds: [] } }" :max-connections="2"
+  :on-selection-change="setConnectionIds" />
+
+<ManagerInvocationSection :wire="wire" :definition="invocationDefinition">
+  <template #standalone><ManagerHome /></template>
+  <template #called><CreateConnectionSection :wire="wire" :definition="providerInterfaces.createConnection">
+    <template #default="{ data, setData }">
+      <input class="dcmsdk-input" :value="data.database"
+        @input="setData({ ...data, database: ($event.target as HTMLInputElement).value })" />
+    </template>
+  </CreateConnectionSection></template>
+</ManagerInvocationSection>
+```
+
+### Svelte provider and consumer
+
+```svelte
+<ConnectionSection {wire} resource={{ filters: { type: "database" } }}
+  initialData={{ connectionIds: [] }} maxConnections={2}
+  onSelectionChange={(ids) => connectionIds = ids} />
+
+<ManagerInvocationSection {wire} definition={invocationDefinition}>
+  {#snippet standalone()}<ManagerHome />{/snippet}
+  {#snippet called()}<CreateConnectionSection {wire} definition={providerInterfaces.createConnection}>
+    {#snippet children(context)}
+      <input class="dcmsdk-input" value={context.data.database}
+        oninput={(event) => context.setData({ ...context.data, database: event.currentTarget.value })} />
+    {/snippet}
+  </CreateConnectionSection>{/snippet}
+</ManagerInvocationSection>
+```
+
+### Angular provider and consumer
+
+```ts
+import {
+  ConnectionSection,
+  CreateConnectionSection,
+  CreateConnectionSectionBody,
+  ManagerInvocationSection,
+  ManagerInvocationCalledBody,
+} from "@ezenki/deploy-commander-manager-sdk-angular";
+```
+
+```html
+<dcmsdk-connection-section [wire]="wire" [resource]="{ filters: { type: 'database' } }"
+  [selection]="{ initialData: { connectionIds: [] } }" [maxConnections]="2"
+  [onSelectionChange]="setConnectionIds" />
+
+<dcmsdk-manager-invocation-section [wire]="wire" [definition]="invocationDefinition" #invocation>
+  <ng-template #dcmsdkStandalone><app-manager-home /></ng-template>
+  <ng-template [dcmsdkManagerInvocationCalledFor]="invocation" let-context>
+    <dcmsdk-create-connection-section [wire]="wire" [definition]="providerInterfaces.createConnection" #provider>
+      <ng-template [dcmsdkCreateConnectionBodyFor]="provider" let-context>
+        <input class="dcmsdk-input" [value]="context.data.database" (input)="updateDatabase(context, $event)" />
+      </ng-template>
+    </dcmsdk-create-connection-section>
+  </ng-template>
+</dcmsdk-manager-invocation-section>
+```
+
+`ManagerInvocationSection` is optional. It detects standalone versus called mode through the manager-interface RPC, parses metadata only for a called view, and renders only the active content. Called content gets `callingManagerId`, parsed `metadata`, and explicit `complete(result)` / `fail(error)` callbacks. Rendering alone does not run actions or close the interface. When the called view contains `CreateConnectionSection`, the provider section owns the close on creation or cancellation; do not also call `complete` or `fail` for that same connection operation. For other manager interfaces, the called view can use those callbacks directly.
+
+All four packages include the Tailwind utilities used by their SDK source in their published stylesheet. Applications only need to import that package stylesheet; they do not need to scan SDK source paths.
 
 ## Development
 
