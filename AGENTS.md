@@ -21,7 +21,7 @@ This repository contains one SDK monorepo with five independently consumable pac
 
 Framework packages may depend on core when using shared functionality. Core must remain independent of framework packages. Each package exposes its public API from its root entry point. Keep public exports deliberate and covered by package-consumer checks.
 
-The initial package entry points are empty. Do not add SDK functions, action maps, UI components, manager behavior, or framework integrations as part of foundation-only changes.
+The core package exports the shared typed actions object. The framework package entry points remain empty. Do not add manager-specific behavior or frontend components to core.
 
 ## Deploy Commander integration rules
 

@@ -4,7 +4,7 @@ A TypeScript monorepo for reusable libraries and framework packages used by mana
 
 ## Packages
 
-Each package is independently installable. This foundation provides empty ESM entry points and TypeScript declarations. It does not yet implement SDK functions or UI components.
+Each package is independently installable. The core package provides typed resource, connection, and run actions over the Deploy Commander installer interface. The framework packages currently have empty ESM entry points. Framework UI components are not implemented yet.
 
 | Package | Purpose |
 | --- | --- |
