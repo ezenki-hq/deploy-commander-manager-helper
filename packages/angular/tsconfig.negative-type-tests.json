@@ -1,0 +1,4 @@
+{
+  "extends": "./tsconfig.type-tests.json",
+  "include": ["test-types/negative.ts"]
+}

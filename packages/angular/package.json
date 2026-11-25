@@ -5,15 +5,35 @@
   "files": [
     "dist"
   ],
-  "types": "./dist/index.d.ts",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "types": "./dist/types/ezenki-deploy-commander-manager-sdk-angular.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "types": "./dist/types/ezenki-deploy-commander-manager-sdk-angular.d.ts",
+      "default": "./dist/fesm2022/ezenki-deploy-commander-manager-sdk-angular.mjs"
+    },
+    "./styles.css": {
+      "types": "./dist/styles.css.d.ts",
+      "default": "./dist/styles.css"
     }
   },
   "scripts": {
-    "compile": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "compile": "ng-packagr -p ng-package.json -c tsconfig.lib.json && node ../../scripts/finalize-angular-package.mjs",
+    "typecheck": "ngc -p tsconfig.lib.json --noEmit && node ../../scripts/check-angular-types.mjs",
+    "test:runtime": "ngc -p tsconfig.test.json && node --test tests/configuration.test.mjs"
+  },
+  "peerDependencies": {
+    "@ezenki/deploy-commander-manager-sdk-core": "*",
+    "@angular/common": "^21.0.0",
+    "@angular/core": "^21.0.0"
+  },
+  "devDependencies": {
+    "@angular/compiler": "^21.0.0",
+    "@angular/compiler-cli": "^21.0.0",
+    "@angular/platform-browser": "^21.0.0",
+    "ng-packagr": "^21.0.0",
+    "zone.js": "^0.16.0"
   }
 }

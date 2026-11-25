@@ -19,9 +19,13 @@ This repository contains one SDK monorepo with five independently consumable pac
 - `@ezenki/deploy-commander-manager-sdk-svelte` contains Svelte adapters and components.
 - `@ezenki/deploy-commander-manager-sdk-angular` contains Angular adapters and components.
 
-Framework packages may depend on core when using shared functionality. Core must remain independent of framework packages. Each package exposes its public API from its root entry point. Keep public exports deliberate and covered by package-consumer checks.
+Framework packages depend on core for shared configuration contracts and lifecycle helpers. Core must remain independent of framework packages. Each UI package exposes its components/types at the package root and its prebuilt Tailwind stylesheet at the `./styles.css` export. Angular additionally exports the `ConfigurationSectionBody` template directive. Svelte's root export is compiler-ready and marked with the `svelte` condition. Keep exports deliberate and covered by package-consumer checks.
 
-The core package exports the shared typed actions object. The framework package entry points remain empty. Do not add manager-specific behavior or frontend components to core.
+The framework packages implement `ConfigurationSection`, `SectionActions`, `SectionStatus`, and `ConfigurationGroup`. Keep the UI adapters separate from Deploy Commander RPC and runner implementation details. Use shared core types and lifecycle behavior rather than duplicating contracts. Section bodies stay customizable through framework-native render functions, slots, snippets, or projected templates. Preserve strict data/action compatibility.
+
+Configuration fields do not persist automatically and do not trigger runs on change. Render only actions supplied by the manager; never silently add Save or Reset. Manager actions may use explicitly supplied `CoreActions`. Prefer Deploy Commander resources, connections, runs, history, labels, and frontend state. Add manager database storage only if those capabilities cannot represent the requirement, and document the reason before doing so.
+
+Import each adapter's published stylesheet through its package subpath, for example `@ezenki/deploy-commander-manager-sdk-react/styles.css`. Consumers must not need Tailwind or SDK-source scan configuration. Use the shared `dcmsdk-` class names and CSS variables for component-consistent fields. Themes follow system color preference by default; an ancestor can set `data-dcmsdk-theme="light"` or `data-dcmsdk-theme="dark"`.
 
 ## Deploy Commander integration rules
 
@@ -34,6 +38,6 @@ Read the [manager interface guide](docs/integrations/MANAGER_INTERFACE_GUIDE.md)
 
 ## Development checks
 
-Use Node.js 22 or newer with npm workspaces. Run `npm ci` to install and `npm run build` before reporting a change complete. The build runs ESLint with zero warnings, strict TypeScript checks, compilation, and tests of the compiled package exports. A failure in any stage must fail the build.
+Use Node.js 22.12+ on Node 22, or Node.js 24+, with npm workspaces. Runtime framework peers are React 19, Vue 3.5+, Svelte 5.20+, and Angular 21+. Run `npm ci` to install and `npm run build` before reporting a change complete. The build runs ESLint with zero warnings, strict TypeScript and framework-template checks, compilation, package-export checks, and native runtime tests. A failure in any stage must fail the build.
 
-Shared TypeScript settings live in `tsconfig.base.json`. Keep each package's TypeScript config extending that base. Keep source in `packages/<name>/src`, generated output in ignored `dist` folders, and package exports rooted at `.`.
+Shared TypeScript settings live in `tsconfig.base.json`. Keep each package's TypeScript config extending that base. Keep source in `packages/<name>/src`, generated output in ignored `dist` folders, and package exports rooted at `.`. Keep CSS source in `styles/`; generated package styles and declarations are build artifacts. Preserve strict mode and add both positive and negative consumer fixtures when changing public generic APIs.
