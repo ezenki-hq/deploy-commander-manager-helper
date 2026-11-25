@@ -6,7 +6,8 @@
     "node": "^22.12.0 || >=24.0.0"
   },
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "examples/managers/*"
   ],
   "scripts": {
     "compile": "npm run compile --workspace=@ezenki/deploy-commander-manager-sdk-core && npm run compile --workspaces --if-present && npm run build:styles",
@@ -15,7 +16,9 @@
     "test": "npm run compile && npm run check:react-types && node --test test/*.test.mjs && npm run test:runtime --workspaces --if-present",
     "build:styles": "node scripts/build-configuration-styles.mjs",
     "check:react-types": "node scripts/check-react-types.mjs",
-    "build": "npm run lint && npm run typecheck && npm test"
+    "build": "npm run lint && npm run typecheck && npm test && npm run build:examples && npm run test:examples",
+    "build:examples": "npm run build --workspaces --if-present --workspace=@ezenki/dumb-cache-manager --workspace=@ezenki/dumb-cache-setter-manager",
+    "test:examples": "npm test --workspace=@ezenki/dumb-cache-manager && npm test --workspace=@ezenki/dumb-cache-setter-manager"
   },
   "devDependencies": {
     "@angular/common": "^21.2.26",

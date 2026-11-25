@@ -1,5 +1,7 @@
 # Deploy Commander Manager SDK
 
+See [the reference managers](examples/README.md) for the Dumb Cache provider and Setter consumer apps built on this SDK.
+
 A TypeScript monorepo of reusable libraries for managers that integrate with Deploy Commander. The shared core owns framework-independent contracts and actions; the framework packages provide configuration UI without embedding manager-specific persistence or Deploy Commander transport logic.
 
 ## Packages

@@ -1,0 +1,1 @@
+{"name":"dumb-cache-setter-web","version":"1.0.0","private":true,"type":"module","scripts":{"build":"vite build"},"dependencies":{"vite":"^6.4.6","typescript":"^5.9.3","react":"^19.3.1","react-dom":"^19.3.1"},"devDependencies":{"@types/react":"^19.3.3","@types/react-dom":"^19.3.0","@vitejs/plugin-react":"^4.7.0"}}
